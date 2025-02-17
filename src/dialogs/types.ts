@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface DialogKey<TResult = unknown> extends Promise<TResult> {
   key: number;
 }

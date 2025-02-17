@@ -30,6 +30,7 @@ module.exports = tsEslint.config({
     'react/react-in-jsx-scope': 'off',
     'react/display-name': 'off',
     'import/prefer-default-export': 'off',
+    'import/no-extraneous-dependencies': 'off',
     'no-restricted-exports': 'off',
     'no-shadow': 'off',
     'no-plusplus': 'off',

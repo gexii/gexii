@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Button,
   ButtonProps,
@@ -31,15 +32,15 @@ export default function AlertDialog({
   message,
   color,
   okText = 'Ok',
-  maxWidth = 'xs',
+  maxWidth = 'sm',
   onClose: close = noop,
 }: AlertDialogProps) {
   return (
-    <Dialog open={open} maxWidth={maxWidth} onClose={() => close()}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close()}>
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
-        <DialogContentText>{message}</DialogContentText>
+        <DialogContentText component="div">{message}</DialogContentText>
       </DialogContent>
 
       <DialogActions>

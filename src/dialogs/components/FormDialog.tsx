@@ -1,3 +1,6 @@
+import { noop } from 'lodash';
+import React, { createElement, useRef } from 'react';
+import { useBoolean } from 'react-use';
 import {
   Button,
   ButtonProps,
@@ -7,9 +10,6 @@ import {
   DialogProps,
   DialogTitle,
 } from '@mui/material';
-import { noop } from 'lodash';
-import React, { createElement, useRef } from 'react';
-import { useBoolean } from 'react-use';
 
 // ----------
 
@@ -59,7 +59,7 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
   };
 
   return (
-    <Dialog open={open} maxWidth={maxWidth} onClose={() => close(null)}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(null)}>
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>

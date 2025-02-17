@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Button,
   ButtonProps,
@@ -33,15 +34,15 @@ export default function ConfirmDialog({
   color,
   okText = 'Ok',
   cancelText = 'Cancel',
-  maxWidth = 'xs',
+  maxWidth = 'sm',
   onClose: close = noop,
 }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} maxWidth={maxWidth} onClose={() => close(false)}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(false)}>
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
-        <DialogContentText>{message}</DialogContentText>
+        <DialogContentText component="div">{message}</DialogContentText>
       </DialogContent>
 
       <DialogActions>
