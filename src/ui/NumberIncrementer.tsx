@@ -1,3 +1,5 @@
+'use client';
+
 import { get, isNumber, noop } from 'lodash';
 import React, { cloneElement, ForwardedRef, forwardRef } from 'react';
 import {

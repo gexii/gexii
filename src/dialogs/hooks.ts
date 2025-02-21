@@ -22,19 +22,22 @@ export const useDialogs = () => {
     ...dialogs,
 
     alert(title: React.ReactNode, message: React.ReactNode, options?: OpenAlertDialogOptions) {
-      return dialogs.open(AlertDialog, { ...options, title, message });
+      const payload = { ...options, title, message };
+      return dialogs.open(AlertDialog, payload);
     },
 
     confirm(title: React.ReactNode, message: React.ReactNode, options?: OpenConfirmDialogOptions) {
-      return dialogs.open(ConfirmDialog, { ...options, title, message });
+      const payload = { ...options, title, message };
+      return dialogs.open(ConfirmDialog, payload);
     },
 
     form<TComponent extends React.ComponentType<any>>(
       component: TComponent,
       title: React.ReactNode,
-      options?: OpenFormDialogOptions,
+      options?: OpenFormDialogOptions & Omit<React.ComponentProps<TComponent>, 'onSubmit'>,
     ) {
-      return dialogs.open(FormDialog, { ...options, component, title });
+      const payload = { ...options, title, component };
+      return dialogs.open(FormDialog, payload);
     },
   };
 };

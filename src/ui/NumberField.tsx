@@ -1,3 +1,5 @@
+'use client';
+
 import MuiTextField, { StandardTextFieldProps } from '@mui/material/TextField';
 import { isNumber, noop } from 'lodash';
 import React, { ForwardedRef, forwardRef, useState } from 'react';

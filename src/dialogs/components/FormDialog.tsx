@@ -1,3 +1,5 @@
+'use client';
+
 import { noop } from 'lodash';
 import React, { createElement, useRef } from 'react';
 import { useBoolean } from 'react-use';
@@ -33,10 +35,11 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
   component: FormContent,
   title,
   color,
-  okText = 'Ok',
+  okText = 'Submit',
   cancelText = 'Cancel',
-  maxWidth = 'md',
+  maxWidth = 'xs',
   onClose: close = noop,
+  ...props
 }: FormDialogProps<TComponent>) {
   const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useBoolean(false);
@@ -63,7 +66,7 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
-        {createElement(FormContent, { ref: formRef, onSubmit: handleSubmit })}
+        {createElement(FormContent, { ...props, ref: formRef, onSubmit: handleSubmit })}
       </DialogContent>
 
       <DialogActions>

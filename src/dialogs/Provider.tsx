@@ -1,7 +1,9 @@
+'use client';
+
 import React, { useRef, useState } from 'react';
 import { noop, omit } from 'lodash';
 
-import { CloseDialog, DialogComponent, DialogKey, OpenDialog } from './types';
+import { CloseDialog, DialogComponent, DialogKey, OpenDialog, OpenDialogOptions } from './types';
 import { DialogsContext } from './context';
 
 // ----------
@@ -20,7 +22,7 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
   const indexRef = useRef(0);
   const uniqueId = () => indexRef.current++;
 
-  const insertItem = (config: Pick<DialogConfig, 'Component' | 'payload'>) => {
+  const insertItem = (config: Pick<DialogConfig, 'Component' | 'payload' | 'options'>) => {
     const [promise, resolvePromise] = generateDialogKey();
     setCollection((collection) => ({
       ...collection,
@@ -55,24 +57,30 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
 
   // --- PROCEDURES ---
 
-  const openDialog: OpenDialog = (component, payload) => {
-    return insertItem({ Component: component, payload });
+  const openDialog: OpenDialog = (component, payload, options = {}) => {
+    return insertItem({ Component: component, payload, options });
   };
 
   const closeDialog: CloseDialog = async (dialog, result) => {
-    const awaitedResult = await result;
-
     const config = findItem(dialog.key);
     if (!config) return;
-    updateItem(dialog.key, { open: false });
 
-    // Wait for the dialog to close
-    await new Promise((resolve) => {
-      setTimeout(resolve, 200);
-    });
+    try {
+      const awaitedResult = await result;
 
-    removeItem(dialog.key);
-    config.resolvePromise(awaitedResult);
+      // Close dialog then wait for close animation
+      updateItem(dialog.key, { open: false });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      removeItem(dialog.key);
+      config.resolvePromise(awaitedResult);
+    } catch (error) {
+      if (error instanceof Error) {
+        config.options.onCloseError?.(error);
+      }
+    }
   };
 
   return (
@@ -102,5 +110,6 @@ interface DialogConfig {
   payload: Record<string, unknown>;
   open: boolean;
   promise: DialogKey;
+  options: OpenDialogOptions;
   resolvePromise: (result: unknown) => void;
 }

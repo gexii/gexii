@@ -8,7 +8,12 @@ export interface OpenDialog {
   <TDialog extends React.ComponentType<any>>(
     component: TDialog,
     payload: Omit<React.ComponentProps<TDialog>, 'open' | 'onClose'>,
+    options?: OpenDialogOptions,
   ): DialogKey<ResultType<TDialog>>;
+}
+
+export interface OpenDialogOptions {
+  onCloseError?: (error: Error) => void;
 }
 
 export interface CloseDialog {
