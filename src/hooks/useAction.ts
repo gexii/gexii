@@ -37,6 +37,7 @@ export function useAction<T extends (...args: any[]) => any>(
         try {
           const result = await callbackRef.current(...args);
           setData(result);
+          setError(null);
           options.onSuccess?.(result);
         } catch (error) {
           if (error instanceof Error) {
