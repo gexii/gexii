@@ -2,7 +2,6 @@
 
 import { cloneElement, useMemo } from 'react';
 import { includes, isObject } from 'lodash';
-import { useUpdateEffect } from 'react-use';
 import { useController, UseControllerProps, useFormContext } from 'react-hook-form';
 import {
   Collapse,
@@ -15,7 +14,7 @@ import {
   styled,
 } from '@mui/material';
 
-import { useLastValidValue } from 'src/hooks';
+import { useLastValidValue, useUpdateEffect } from 'src/hooks';
 import { combineCallbacks } from 'src/utils';
 
 import { TransformableType, transform } from './helpers';
@@ -123,13 +122,13 @@ export default function Field({
 
       <Stack direction="row">{renderField()}</Stack>
 
-      <Collapse in={hasError}>
+      <Collapse in={hasError} mountOnEnter unmountOnExit>
         <FormHelperText {...slotProps?.helperText} error>
           {lastError?.message}
         </FormHelperText>
       </Collapse>
 
-      <Collapse in={!hasError && Boolean(helper)}>
+      <Collapse in={!hasError && Boolean(helper)} mountOnEnter unmountOnExit>
         <FormHelperText {...slotProps?.helperText}>{helper}</FormHelperText>
       </Collapse>
     </Root>

@@ -3,9 +3,10 @@
 import MuiTextField, { StandardTextFieldProps } from '@mui/material/TextField';
 import { isNumber, noop } from 'lodash';
 import React, { ForwardedRef, forwardRef, useState } from 'react';
-import { useBoolean, useUpdateEffect } from 'react-use';
+import { useBoolean } from 'react-use';
 
 import { combineCallbacks } from 'src/utils';
+import { useUpdateEffect } from 'src/hooks';
 
 // ----------
 
