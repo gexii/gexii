@@ -58,4 +58,13 @@ function Form<TForm extends ComponentType = 'form'>(
   );
 }
 
-export default forwardRef(Form as never) as unknown as typeof Form;
+interface FormComponent {
+  <TForm extends ComponentType = 'form'>(
+    props: FormProps<TForm> &
+      Omit<React.ComponentProps<TForm>, keyof FormProps<any>> & {
+        ref?: React.Ref<React.ComponentRef<TForm>>;
+      },
+  ): React.ReactElement;
+}
+
+export default forwardRef(Form as never) as unknown as FormComponent;
