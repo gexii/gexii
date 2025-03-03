@@ -11,6 +11,8 @@ import {
   OpenConfirmDialogOptions,
   FormDialog,
   OpenFormDialogOptions,
+  ViewDialog,
+  OpenViewDialogOptions,
 } from './components';
 
 // ----------
@@ -31,6 +33,15 @@ export const useDialogs = () => {
     confirm(title: React.ReactNode, message: React.ReactNode, options?: OpenConfirmDialogOptions) {
       const payload = { ...options, title, message };
       return dialogs.open(ConfirmDialog, payload);
+    },
+
+    view<TComponent extends React.ComponentType<any>>(
+      component: TComponent,
+      title: React.ReactNode,
+      options?: OpenViewDialogOptions & React.ComponentProps<TComponent>,
+    ) {
+      const payload = { ...options, title, component };
+      return dialogs.open(ViewDialog, payload);
     },
 
     form<TComponent extends React.ComponentType<any>>(

@@ -6,3 +6,6 @@ export type * from './ConfirmDialog';
 
 export { default as FormDialog } from './FormDialog';
 export type * from './FormDialog';
+
+export { default as ViewDialog } from './ViewDialog';
+export type * from './ViewDialog';
