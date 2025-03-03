@@ -1,23 +1,34 @@
 'use client';
 
 import { noop } from 'lodash';
-import React, { forwardRef } from 'react';
+import React, { createElement, forwardRef } from 'react';
 import { UseFormReturn, FormProvider, SubmitHandler } from 'react-hook-form';
 import { combineCallbacks } from 'src/utils';
 
 // ----------
 
-export interface FormProps {
+type ComponentType = React.ComponentType<any> | React.HTMLElementType;
+
+export interface FormProps<TForm extends ComponentType = any> {
   children: React.ReactNode;
   methods: UseFormReturn<any>;
+  component?: TForm;
   onBeforeSubmit?: SubmitHandler<any>;
   onSubmit?: SubmitHandler<any>;
   onSubmitError?: (error: unknown, event?: React.BaseSyntheticEvent) => void;
 }
 
-export default forwardRef(function Form(
-  { children, methods, onBeforeSubmit, onSubmit = noop, onSubmitError }: FormProps,
-  ref: React.ForwardedRef<HTMLFormElement>,
+function Form<TForm extends ComponentType = 'form'>(
+  {
+    children,
+    methods,
+    component = 'form' as TForm,
+    onBeforeSubmit,
+    onSubmit = noop,
+    onSubmitError,
+    ...props
+  }: FormProps<TForm> & Omit<React.ComponentProps<TForm>, keyof FormProps<any>>,
+  ref: React.ForwardedRef<React.ComponentRef<TForm>>,
 ) {
   const handleMethodSubmit: SubmitHandler<any> = async (data, event) => {
     try {
@@ -31,15 +42,20 @@ export default forwardRef(function Form(
 
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={combineCallbacks.sequential(
-          onBeforeSubmit && methods.handleSubmit(onBeforeSubmit),
-          methods.handleSubmit(handleMethodSubmit, onSubmitError),
-        )}
-        ref={ref}
-      >
-        {children}
-      </form>
+      {createElement(
+        component,
+        {
+          ...props,
+          ref,
+          onSubmit: combineCallbacks.sequential(
+            onBeforeSubmit && methods.handleSubmit(onBeforeSubmit),
+            methods.handleSubmit(handleMethodSubmit, onSubmitError),
+          ),
+        },
+        children,
+      )}
     </FormProvider>
   );
-});
+}
+
+export default forwardRef(Form as never) as unknown as typeof Form;
