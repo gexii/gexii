@@ -39,7 +39,7 @@ export default function ViewDialog<TComponent extends React.ComponentType<any>>(
   return (
     <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(null)}>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent>{createElement(Content, props)}</DialogContent>
+      <DialogContent>{createElement(Content, { ...props, onClose: close })}</DialogContent>
       <DialogActions />
     </Dialog>
   );
