@@ -3,3 +3,5 @@ export type * from './Provider';
 
 export { useDialogs } from './hooks';
 export type * from './hooks';
+
+export { FormDialog, ViewDialog } from './components';

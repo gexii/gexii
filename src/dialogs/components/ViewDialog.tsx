@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from '@mui/material';
 
+import { DialogKey } from '../types';
+
 // ----------
 
 export interface OpenViewDialogOptions {
@@ -44,3 +46,5 @@ export default function ViewDialog<TComponent extends React.ComponentType<any>>(
     </Dialog>
   );
 }
+
+ViewDialog.isCancelled = async (dialog: DialogKey) => (await dialog) === null;

@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@mui/material';
 
+import { DialogKey } from '../types';
+
 // ----------
 
 export interface OpenFormDialogOptions {
@@ -80,3 +82,5 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
     </Dialog>
   );
 }
+
+FormDialog.isCancelled = async (dialog: DialogKey) => (await dialog) === null;

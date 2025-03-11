@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { noop, omit } from 'lodash';
 
 import { CloseDialog, DialogComponent, DialogKey, OpenDialog, OpenDialogOptions } from './types';
@@ -45,11 +45,14 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
     const key = uniqueId();
 
     let resolvePromise = noop;
-    const promise: DialogKey<never> = Object.assign(
-      new Promise<never>((resolve) => {
+    const promise: DialogKey<unknown> = Object.assign(
+      new Promise<unknown>((resolve) => {
         resolvePromise = resolve;
       }),
-      { key },
+      {
+        key,
+        close: (result: unknown) => closeDialog(key, result),
+      },
     );
 
     return [promise, resolvePromise] as const;
@@ -57,24 +60,24 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
 
   // --- PROCEDURES ---
 
-  const openDialog: OpenDialog = (component, payload, options = {}) => {
+  const openDialog = (component: React.ComponentType<any>, payload: {}, options = {}) => {
     return insertItem({ Component: component, payload, options });
   };
 
-  const closeDialog: CloseDialog = async (dialog, result) => {
-    const config = findItem(dialog.key);
+  const closeDialog = async (key: number, result: unknown) => {
+    const config = findItem(key);
     if (!config) return;
 
     try {
       const awaitedResult = await result;
 
       // Close dialog then wait for close animation
-      updateItem(dialog.key, { open: false });
+      updateItem(key, { open: false });
       await new Promise((resolve) => {
         setTimeout(resolve, 200);
       });
 
-      removeItem(dialog.key);
+      removeItem(key);
       config.resolvePromise(awaitedResult);
     } catch (error) {
       if (error instanceof Error) {
@@ -85,10 +88,13 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
 
   return (
     <DialogsContext.Provider
-      value={{
-        open: openDialog,
-        close: closeDialog,
-      }}
+      value={useMemo(
+        () => ({
+          open: openDialog as OpenDialog,
+          close: ((dialog, result) => closeDialog(dialog.key, result)) as CloseDialog,
+        }),
+        [],
+      )}
     >
       {children}
       {Object.values(collection).map(({ Component, open, promise, payload }) => (
@@ -96,7 +102,7 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
           {...payload}
           key={promise.key}
           open={open}
-          onClose={(result) => closeDialog(promise, result)}
+          onClose={(result) => closeDialog(promise.key, result)}
         />
       ))}
     </DialogsContext.Provider>

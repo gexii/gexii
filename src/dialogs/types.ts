@@ -2,6 +2,7 @@ import React from 'react';
 
 export interface DialogKey<TResult = unknown> extends Promise<TResult> {
   key: number;
+  close: (result?: TResult) => Promise<void>;
 }
 
 export interface OpenDialog {
@@ -17,7 +18,7 @@ export interface OpenDialogOptions {
 }
 
 export interface CloseDialog {
-  <TResult = void>(key: DialogKey, result?: TResult): void;
+  <TResult = void>(dialog: DialogKey, result?: TResult): void;
 }
 
 export type DialogComponent<
