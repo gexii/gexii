@@ -41,6 +41,7 @@ export interface FieldProps extends FieldPropsBase {
   label?: React.ReactNode;
   helper?: React.ReactNode;
   fullWidth?: boolean;
+  orientation?: EOrientation;
   slotProps?: {
     root?: StackProps;
     label?: FormLabelProps;
@@ -62,6 +63,7 @@ export default function Field({
   label,
   helper,
   fullWidth = false,
+  orientation = EOrientation.VERTICAL,
   slotProps,
 
   // controller configs
@@ -79,6 +81,8 @@ export default function Field({
     isObject,
     () => childrenProps.error || control.fieldState.error,
   );
+
+  const lastHelper = useLastValidValue(Boolean, () => helper);
 
   // --- FUNCTIONS ---
 
@@ -107,6 +111,10 @@ export default function Field({
     } as never);
   };
 
+  const getRootDirection = () => {
+    return orientation === EOrientation.HORIZONTAL ? 'row' : 'column';
+  };
+
   // --- EFFECTS ---
 
   // force trigger onChange event if the value of dependencies changed
@@ -117,7 +125,7 @@ export default function Field({
   if (variant === VARIANT.PURE) return renderField();
 
   return (
-    <Root {...slotProps?.root} direction="column" fullWidth={fullWidth}>
+    <Root {...slotProps?.root} direction={getRootDirection()} fullWidth={fullWidth}>
       {label && <FormLabel {...slotProps?.label}>{label}</FormLabel>}
 
       <Stack direction="row">{renderField()}</Stack>
@@ -129,7 +137,7 @@ export default function Field({
       </Collapse>
 
       <Collapse in={!hasError && Boolean(helper)} mountOnEnter unmountOnExit>
-        <FormHelperText {...slotProps?.helperText}>{helper}</FormHelperText>
+        <FormHelperText {...slotProps?.helperText}>{lastHelper}</FormHelperText>
       </Collapse>
     </Root>
   );
@@ -142,3 +150,12 @@ const Root = styled(Stack, { shouldForwardProp: (prop) => !includes(['fullWidth'
 >(({ fullWidth }) => ({
   width: fullWidth ? '100%' : undefined,
 }));
+
+// ----- TYPES -----
+
+const EOrientation = {
+  VERTICAL: 'vertical',
+  HORIZONTAL: 'horizontal',
+} as const;
+
+type EOrientation = (typeof EOrientation)[keyof typeof EOrientation];
