@@ -42,6 +42,7 @@ export interface FieldProps extends FieldPropsBase {
   helper?: React.ReactNode;
   fullWidth?: boolean;
   orientation?: EOrientation;
+  errorMessageGetter?: (error: Error) => React.ReactNode;
   slotProps?: {
     root?: StackProps;
     label?: FormLabelProps;
@@ -64,6 +65,7 @@ export default function Field({
   helper,
   fullWidth = false,
   orientation = EOrientation.VERTICAL,
+  errorMessageGetter = (error) => error.message,
   slotProps,
 
   // controller configs
@@ -132,7 +134,7 @@ export default function Field({
 
       <Collapse in={hasError} mountOnEnter unmountOnExit>
         <FormHelperText {...slotProps?.helperText} error>
-          {lastError?.message}
+          {lastError && errorMessageGetter(lastError)}
         </FormHelperText>
       </Collapse>
 
