@@ -10,7 +10,7 @@ export function useAction<T extends (...args: any[]) => any>(
 ): Action<T> {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<ReturnType<T> | null>(null);
+  const [data, setData] = useState<ReturnType<Awaited<T>> | null>(null);
 
   const state = useMemo(() => {
     return { loading, error, data };
