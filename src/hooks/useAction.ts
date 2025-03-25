@@ -4,13 +4,16 @@ import { useMemo, useRef, useState } from 'react';
 
 // ----------
 
-export function useAction<T extends (...args: any[]) => any>(
+export function useAction<
+  T extends (...args: any[]) => any,
+  TDefault extends Awaited<ReturnType<T>> | null,
+>(
   callback: T,
-  options: ActionOptions<T> = {},
-): Action<T> {
+  { defaultValue = null as TDefault, ...options }: ActionOptions<T, TDefault> = {},
+): Action<T, TDefault> {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<ReturnType<Awaited<T>> | null>(null);
+  const [data, setData] = useState<Awaited<ReturnType<T>> | TDefault>(defaultValue);
 
   const state = useMemo(() => {
     return { loading, error, data };
@@ -56,16 +59,23 @@ export function useAction<T extends (...args: any[]) => any>(
 
 // ----- TYPES -----
 
-export interface Action<T extends (...args: any[]) => any> {
+export interface Action<
+  T extends (...args: any[]) => any,
+  TDefault extends Awaited<ReturnType<T>> | null,
+> {
   call: T;
   getError(): Error | null;
-  getData(): ReturnType<T> | null;
+  getData(): Awaited<ReturnType<T>> | TDefault;
   isLoading(): boolean;
   hasError(): boolean;
 }
 
-export interface ActionOptions<T extends (...args: any[]) => any> {
-  onSuccess?: (data: ReturnType<T>) => void;
+export interface ActionOptions<
+  T extends (...args: any[]) => any,
+  TDefault extends Awaited<ReturnType<T>> | null,
+> {
+  onSuccess?: (data: Awaited<ReturnType<T>>) => void;
   onError?: (error: Error) => void;
   throwOnError?: boolean;
+  defaultValue?: TDefault;
 }
