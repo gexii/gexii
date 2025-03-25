@@ -13,6 +13,9 @@ import {
 } from '@mui/material';
 import { noop } from 'lodash';
 
+import { combineCallbacks } from 'src/utils';
+import { useAction } from 'src/hooks';
+
 // ----------
 
 export interface OpenConfirmDialogOptions {
@@ -20,6 +23,8 @@ export interface OpenConfirmDialogOptions {
   cancelText?: React.ReactNode;
   color?: ButtonProps['color'];
   maxWidth?: DialogProps['maxWidth'];
+  onOk?: () => void | Promise<void>;
+  onCancel?: () => void | Promise<void>;
 }
 
 export interface ConfirmDialogProps extends OpenConfirmDialogOptions {
@@ -37,10 +42,15 @@ export default function ConfirmDialog({
   okText = 'Ok',
   cancelText = 'Cancel',
   maxWidth = 'sm',
+  onOk,
+  onCancel,
   onClose: close = noop,
 }: ConfirmDialogProps) {
+  const ok = useAction(combineCallbacks.sequential(onOk, () => close(true)));
+  const cancel = useAction(combineCallbacks.sequential(onCancel, () => close(false)));
+
   return (
-    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(false)}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => cancel.call()}>
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
@@ -48,10 +58,21 @@ export default function ConfirmDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button variant="outlined" color={color} onClick={() => close(false)}>
+        <Button
+          variant="outlined"
+          color={color}
+          loading={cancel.isLoading()}
+          onClick={() => cancel.call()}
+        >
           {cancelText}
         </Button>
-        <Button variant="contained" color={color} onClick={() => close(true)}>
+
+        <Button
+          variant="contained"
+          color={color}
+          loading={ok.isLoading()}
+          onClick={() => ok.call()}
+        >
           {okText}
         </Button>
       </DialogActions>

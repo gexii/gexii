@@ -2,7 +2,6 @@
 
 import { noop } from 'lodash';
 import React, { createElement, useRef } from 'react';
-import { useBoolean } from 'react-use';
 import {
   Button,
   ButtonProps,
@@ -13,23 +12,28 @@ import {
   DialogTitle,
 } from '@mui/material';
 
+import { useAction } from 'src/hooks';
+import { combineCallbacks } from 'src/utils';
+
 import { DialogKey } from '../types';
 
 // ----------
 
-export interface OpenFormDialogOptions {
+export interface OpenFormDialogOptions<TComponent extends React.ComponentType<any>> {
   okText?: React.ReactNode;
   cancelText?: React.ReactNode;
   color?: ButtonProps['color'];
   maxWidth?: DialogProps['maxWidth'];
+  onOk?: (data: Awaited<SubmitReturn<TComponent>>) => void | Promise<void>;
+  onCancel?: () => void | Promise<void>;
 }
 
 export interface FormDialogProps<TComponent extends React.ComponentType<any>>
-  extends OpenFormDialogOptions {
+  extends OpenFormDialogOptions<TComponent> {
   open: boolean;
   title: React.ReactNode;
   component: TComponent;
-  onClose: (result: Parameters<React.ComponentProps<TComponent>['onSubmit']>[0] | null) => unknown;
+  onClose: (result: SubmitReturn<TComponent> | null) => unknown;
 }
 
 export default function FormDialog<TComponent extends React.ComponentType<any>>({
@@ -40,13 +44,17 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
   okText = 'Submit',
   cancelText = 'Cancel',
   maxWidth = 'xs',
+  onOk = noop,
+  onCancel = noop,
   onClose: close = noop,
   ...props
 }: FormDialogProps<TComponent>) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [loading, setLoading] = useBoolean(false);
 
   // --- FUNCTIONS ---
+
+  const ok = useAction(onOk);
+  const cancel = useAction(combineCallbacks.sequential(onCancel, () => close(null)));
 
   const requestSubmit = () => {
     formRef.current?.requestSubmit();
@@ -54,28 +62,41 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
 
   // --- HANDLERS ---
 
-  const handleSubmit = async (data: unknown) => {
-    try {
-      setLoading(true);
-      await close(data);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = useAction(async (data: SubmitReturn<TComponent>) => {
+    const submission = (async () => {
+      const awaitedData = await data;
+      await ok.call(awaitedData);
+      return awaitedData;
+    })();
+
+    await close(submission);
+    await submission;
+  });
 
   return (
-    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(null)}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => cancel.call()}>
       <DialogTitle>{title}</DialogTitle>
 
       <DialogContent>
-        {createElement(FormContent, { ...props, ref: formRef, onSubmit: handleSubmit })}
+        {createElement(FormContent, { ...props, ref: formRef, onSubmit: handleSubmit.call })}
       </DialogContent>
 
       <DialogActions>
-        <Button variant="outlined" color={color} onClick={() => close(null)}>
+        <Button
+          variant="outlined"
+          color={color}
+          loading={cancel.isLoading()}
+          onClick={() => cancel.call()}
+        >
           {cancelText}
         </Button>
-        <Button loading={loading} variant="contained" color={color} onClick={() => requestSubmit()}>
+
+        <Button
+          loading={handleSubmit.isLoading()}
+          variant="contained"
+          color={color}
+          onClick={() => requestSubmit()}
+        >
           {okText}
         </Button>
       </DialogActions>
@@ -84,3 +105,9 @@ export default function FormDialog<TComponent extends React.ComponentType<any>>(
 }
 
 FormDialog.isCancelled = async (dialog: DialogKey) => (await dialog) === null;
+
+// ----- TYPES -----
+
+type SubmitReturn<T extends React.ComponentType<any>> = Parameters<
+  React.ComponentProps<T>['onSubmit']
+>[0];

@@ -47,9 +47,15 @@ export const useDialogs = () => {
     form<TComponent extends React.ComponentType<any>>(
       component: TComponent,
       title: React.ReactNode,
-      options?: OpenFormDialogOptions & Omit<React.ComponentProps<TComponent>, 'onSubmit'>,
+      options?: OpenFormDialogOptions<TComponent> &
+        Omit<React.ComponentProps<TComponent>, 'onSubmit'>,
     ) {
-      const payload = { ...options, title, component };
+      const payload = {
+        ...options,
+        title,
+        component,
+        onOk: options?.onOk as (data: unknown) => void,
+      };
       return dialogs.open(FormDialog, payload);
     },
   };
