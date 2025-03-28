@@ -20,6 +20,7 @@ export interface OpenViewDialogOptions {
   cancelText?: React.ReactNode;
   color?: ButtonProps['color'];
   maxWidth?: DialogProps['maxWidth'];
+  onClose?: () => void;
 }
 
 export interface ViewDialogProps<TComponent extends React.ComponentType<any>>
@@ -27,7 +28,7 @@ export interface ViewDialogProps<TComponent extends React.ComponentType<any>>
   open: boolean;
   title: React.ReactNode;
   component: TComponent;
-  onClose: (result: Parameters<React.ComponentProps<TComponent>['onSubmit']>[0] | null) => unknown;
+  onClose: () => void;
 }
 
 export default function ViewDialog<TComponent extends React.ComponentType<any>>({
@@ -39,7 +40,7 @@ export default function ViewDialog<TComponent extends React.ComponentType<any>>(
   ...props
 }: ViewDialogProps<TComponent>) {
   return (
-    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close(null)}>
+    <Dialog open={open} fullWidth maxWidth={maxWidth} onClose={() => close()}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>{createElement(Content, { ...props, onClose: close })}</DialogContent>
       <DialogActions />

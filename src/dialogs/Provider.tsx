@@ -102,7 +102,10 @@ export default function DialogsProvider({ children }: DialogsProviderProps) {
           {...payload}
           key={promise.key}
           open={open}
-          onClose={(result) => closeDialog(promise.key, result)}
+          onClose={(result) => {
+            if (typeof payload.onClose === 'function') payload.onClose(result);
+            return closeDialog(promise.key, result);
+          }}
         />
       ))}
     </DialogsContext.Provider>

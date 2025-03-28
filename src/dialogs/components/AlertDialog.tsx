@@ -19,6 +19,7 @@ export interface OpenAlertDialogOptions {
   okText?: React.ReactNode;
   color?: ButtonProps['color'];
   maxWidth?: DialogProps['maxWidth'];
+  onClose?: () => void;
 }
 
 export interface AlertDialogProps extends OpenAlertDialogOptions {

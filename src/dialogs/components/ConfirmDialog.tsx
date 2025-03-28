@@ -25,13 +25,14 @@ export interface OpenConfirmDialogOptions {
   maxWidth?: DialogProps['maxWidth'];
   onOk?: () => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
+  onClose?: (confirmed: boolean) => void;
 }
 
 export interface ConfirmDialogProps extends OpenConfirmDialogOptions {
   open: boolean;
   title: React.ReactNode;
   message: React.ReactNode;
-  onClose: (confirmed: boolean) => void;
+  onClose: NonNullable<OpenConfirmDialogOptions['onClose']>;
 }
 
 export default function ConfirmDialog({

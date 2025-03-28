@@ -8,7 +8,8 @@ export interface DialogKey<TResult = unknown> extends Promise<TResult> {
 export interface OpenDialog {
   <TDialog extends React.ComponentType<any>>(
     component: TDialog,
-    payload: Omit<React.ComponentProps<TDialog>, 'open' | 'onClose'>,
+    payload: Omit<React.ComponentProps<TDialog>, 'open' | 'onClose'> &
+      Partial<Pick<React.ComponentProps<TDialog>, 'onClose'>>,
     options?: OpenDialogOptions,
   ): DialogKey<ResultType<TDialog>>;
 }

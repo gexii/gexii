@@ -26,6 +26,7 @@ export interface OpenFormDialogOptions<TComponent extends React.ComponentType<an
   maxWidth?: DialogProps['maxWidth'];
   onOk?: (data: Awaited<SubmitReturn<TComponent>>) => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
+  onClose?: (result: SubmitReturn<TComponent> | null) => void;
 }
 
 export interface FormDialogProps<TComponent extends React.ComponentType<any>>
@@ -33,7 +34,7 @@ export interface FormDialogProps<TComponent extends React.ComponentType<any>>
   open: boolean;
   title: React.ReactNode;
   component: TComponent;
-  onClose: (result: SubmitReturn<TComponent> | null) => unknown;
+  onClose: NonNullable<OpenFormDialogOptions<TComponent>['onClose']>;
 }
 
 export default function FormDialog<TComponent extends React.ComponentType<any>>({
