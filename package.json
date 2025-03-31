@@ -1,7 +1,7 @@
 {
   "name": "gexii",
   "private": false,
-  "version": "0.0.30",
+  "version": "0.0.31",
   "main": "./build/index.js",
   "exports": {
     ".": {
@@ -13,11 +13,20 @@
     "./fields": {
       "default": "./build/fields/index.js"
     },
+    "./query-fields": {
+      "default": "./build/query-fields/index.js"
+    },
     "./hooks": {
       "default": "./build/hooks/index.js"
     },
     "./utils": {
       "default": "./build/utils/index.js"
+    },
+    "./table": {
+      "default": "./build/table/index.js"
+    },
+    "./theme": {
+      "default": "./build/theme/index.js"
     },
     "./ui": {
       "default": "./build/ui/index.js"
@@ -74,6 +83,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-storybook": "^0.11.3",
+    "next": "15.1.6",
     "prettier": "3.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
