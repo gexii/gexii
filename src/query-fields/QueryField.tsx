@@ -15,6 +15,7 @@ import ConfigProvider from './ConfigProvider';
 export interface QueryFieldProps extends UpdateQueryOptions {
   query: string;
   shouldForwardError?: boolean;
+  defaultValue?: unknown;
   children: React.ReactElement;
 }
 
@@ -23,14 +24,15 @@ export default function QueryField({
   children,
   shouldForwardError = false,
   behavior = EBehavior.PUSH,
+  defaultValue,
   childrenFields = [],
 }: QueryFieldProps) {
   const childrenProps = children.props as Record<string, unknown>;
 
-  const value = useContext(ValueContext)[key] || '';
+  const value = useContext(ValueContext)[key] ?? defaultValue;
   const update = useContext(UpdateContext);
 
-  // --- HANDLERS ---
+  // --- FUNCTIONS ---
 
   const getValue = getValueExtractor();
 
