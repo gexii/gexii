@@ -10,15 +10,18 @@ export interface Adapter {
   useSearchParams: () => URLSearchParams;
 }
 
-// ----- UPDATE QUERY
+// ----- UPDATE QUERY -----
 
 export interface UpdateQueryOptions {
+  /** The behavior to use when updating the query, either `replace` or `push`. */
   behavior?: EBehavior;
-  childrenFields?: string[];
+
+  /** The child fields to remove from the query when updating. */
+  childFields?: string[];
 }
 
 export interface UpdateQuery {
-  (key: string, value: unknown, options: Required<UpdateQueryOptions>): void;
+  (key: string, value: unknown, options: Required<UpdateQueryOptions>): Promise<void>;
 }
 
 // ----- ROUTER BEHAVIORS -----

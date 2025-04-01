@@ -30,12 +30,15 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
 
   // --- FUNCTIONS ---
 
-  const update: UpdateQuery = useCallback(async (key, value, { behavior, childrenFields }) => {
+  const matchSearchParams = useRef<((searchParams: URLSearchParams) => void) | null>(null)
+  matchSearchParams.current?.(searchParams);
+
+  const update: UpdateQuery = useCallback(async (key, value, { behavior, childFields }) => {
     const searchParams = new URLSearchParams(window.location.search);
 
     searchParams.set(key, value as string);
 
-    childrenFields.forEach((field) => {
+    childFields.forEach((field) => {
       searchParams.delete(field);
     });
 
@@ -48,6 +51,13 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
     parseBy(searchParams, schema);
 
     router[behavior](`?${searchParams.toString()}`);
+    await new Promise((resolve) => {
+      matchSearchParams.current = (newSearchParams) => {
+        if(newSearchParams.toString() === searchParams.toString()) {
+          resolve(null);
+        }
+      }
+    })
   }, []);
 
   // --- EFFECTS ---

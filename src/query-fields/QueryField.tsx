@@ -15,6 +15,7 @@ import ConfigProvider from './ConfigProvider';
 export interface QueryFieldProps extends UpdateQueryOptions {
   query: string;
   shouldForwardError?: boolean;
+  shouldForwardLoading?: boolean | { prop: string };
   defaultValue?: unknown;
   children: React.ReactElement;
 }
@@ -23,9 +24,10 @@ export default function QueryField({
   query: key,
   children,
   shouldForwardError = false,
+  shouldForwardLoading = false,
   behavior = EBehavior.PUSH,
   defaultValue,
-  childrenFields = [],
+  childFields = [],
 }: QueryFieldProps) {
   const childrenProps = children.props as Record<string, unknown>;
 
@@ -38,9 +40,9 @@ export default function QueryField({
 
   // --- HANDLERS ---
 
-  const handleChange = useAction((...args: unknown[]) => {
+  const handleChange = useAction(async (...args: unknown[]) => {
     const value = getValue(...args);
-    update(key, value, { behavior, childrenFields });
+    await update(key, value, { behavior, childFields });
   });
 
   return cloneElement(children, {
@@ -52,6 +54,9 @@ export default function QueryField({
         : undefined,
       onChange: combineCallbacks(handleChange.call, get(childrenProps, 'onChange') as never),
     },
+    ...shouldForwardLoading ? {
+      [typeof shouldForwardLoading === 'object' ? shouldForwardLoading.prop : 'loading']: handleChange.isLoading(),
+    } : {}
   });
 }
 
