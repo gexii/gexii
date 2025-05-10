@@ -4,7 +4,7 @@ import { ZodTypeAny } from 'zod';
 import { isEqual, isNil, omitBy } from 'lodash';
 import { useCallback, useContext, useRef, useState } from 'react';
 
-import { useUpdateEffect } from 'src/hooks';
+import { useTransitionCallback, useUpdateEffect } from 'src/hooks';
 
 import { ConfigContext, ValueContext, UpdateContext } from './context';
 import { Adapter, UpdateQuery } from './types';
@@ -19,6 +19,7 @@ export interface QueryFieldProviderProps {
 
 export default function QueryFieldProvider({ children, schema }: QueryFieldProviderProps) {
   const adapter = useContext(ConfigContext);
+  const modifyingSearchParamsRef = useRef<URLSearchParams>(null);
   const searchParams = adapter.useSearchParams();
   const router = adapter.useRouter();
 
@@ -30,35 +31,39 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
 
   // --- FUNCTIONS ---
 
-  const matchSearchParams = useRef<((searchParams: URLSearchParams) => void) | null>(null)
-  matchSearchParams.current?.(searchParams);
+  const update = useTransitionCallback<UpdateQuery>(
+    async (key, value, { behavior, childFields }) => {
+      const searchParams = getModifyingSearchParams();
+      searchParams.set(key, value as string);
 
-  const update: UpdateQuery = useCallback(async (key, value, { behavior, childFields }) => {
-    const searchParams = new URLSearchParams(window.location.search);
+      childFields.forEach((field) => {
+        searchParams.delete(field);
+      });
 
-    searchParams.set(key, value as string);
-
-    childFields.forEach((field) => {
-      searchParams.delete(field);
-    });
-
-    searchParams.entries().forEach(([key, value]) => {
-      if (value === '' || isNil(value)) {
-        searchParams.delete(key);
-      }
-    });
-
-    parseBy(searchParams, schema);
-
-    router[behavior](`?${searchParams.toString()}`);
-    await new Promise((resolve) => {
-      matchSearchParams.current = (newSearchParams) => {
-        if(newSearchParams.toString() === searchParams.toString()) {
-          resolve(null);
+      searchParams.entries().forEach(([key, value]) => {
+        if (value === '' || isNil(value)) {
+          searchParams.delete(key);
         }
-      }
-    })
+      });
+
+      parseBy(searchParams, schema);
+
+      router[behavior](`?${searchParams.toString()}`);
+    },
+  );
+
+  const updateQuery = useCallback<UpdateQuery>(async (...args) => {
+    if (!modifyingSearchParamsRef.current)
+      modifyingSearchParamsRef.current = getModifyingSearchParams();
+
+    await update(...args);
+    modifyingSearchParamsRef.current = null;
   }, []);
+
+  const getModifyingSearchParams = () => {
+    if (modifyingSearchParamsRef.current) return modifyingSearchParamsRef.current;
+    return new URLSearchParams(window.location.search);
+  };
 
   // --- EFFECTS ---
 
@@ -71,7 +76,7 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
   }, [searchParams]);
 
   return (
-    <UpdateContext.Provider value={update}>
+    <UpdateContext.Provider value={updateQuery}>
       <ValueContext.Provider value={query}>{children}</ValueContext.Provider>
     </UpdateContext.Provider>
   );

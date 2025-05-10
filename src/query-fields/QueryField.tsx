@@ -3,8 +3,9 @@
 import { get, has } from 'lodash';
 import { cloneElement, useContext } from 'react';
 
-import { useAction } from '../hooks';
-import { combineCallbacks } from '../utils';
+import { useAction } from 'src/hooks';
+import { combineCallbacks } from 'src/utils';
+
 import { ValueContext, UpdateContext } from './context';
 import { EBehavior, UpdateQueryOptions } from './types';
 import Provider from './Provider';
@@ -54,9 +55,12 @@ export default function QueryField({
         : undefined,
       onChange: combineCallbacks(handleChange.call, get(childrenProps, 'onChange') as never),
     },
-    ...shouldForwardLoading ? {
-      [typeof shouldForwardLoading === 'object' ? shouldForwardLoading.prop : 'loading']: handleChange.isLoading(),
-    } : {}
+    ...(shouldForwardLoading
+      ? {
+          [typeof shouldForwardLoading === 'object' ? shouldForwardLoading.prop : 'loading']:
+            handleChange.isLoading(),
+        }
+      : {}),
   });
 }
 
