@@ -60,9 +60,12 @@ export function useTransitionCallback<T extends (...args: any[]) => any>(callbac
   }, [isTriggered, isPending, resolve]);
 
   // Clean up the resolve function when the component unmounts
-  useEffect(() => () => {
-    if (resolve) resolve();
-  });
+  useEffect(
+    () => () => {
+      if (resolve) resolve();
+    },
+    [],
+  );
 
   return run;
 }
