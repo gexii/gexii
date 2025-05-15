@@ -14,6 +14,7 @@ export function useAction<
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<Awaited<ReturnType<T>> | TDefault>(defaultValue);
+  const programKeyRef = useRef(0);
 
   const state = useMemo(() => {
     return { loading, error, data };
@@ -34,6 +35,7 @@ export function useAction<
     setLoading(true);
     setError(null);
     const options = optionsRef.current;
+    const programKey = newProgramKey();
 
     try {
       const result = await callbackRef.current(...args);
@@ -49,7 +51,8 @@ export function useAction<
         if (options.throwOnError !== false) throw error;
       }
     } finally {
-      setLoading(false);
+      // Reset loading state only if the program key equals the latest one
+      if (isCurrentProgramKey(programKey)) setLoading(false);
     }
   };
 
@@ -58,6 +61,10 @@ export function useAction<
     setError(null);
     setData(defaultValue);
   };
+
+  const newProgramKey = () => ++programKeyRef.current;
+
+  const isCurrentProgramKey = (programKey: unknown) => programKey === programKeyRef.current;
 
   return useMemo(() => {
     const action: Action<T, TDefault> = (...args) => call(...args);
