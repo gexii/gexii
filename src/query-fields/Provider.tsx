@@ -1,10 +1,10 @@
 'use client';
 
 import { ZodTypeAny } from 'zod';
-import { isEqual, isNil, omitBy } from 'lodash';
-import { useCallback, useContext, useRef, useState } from 'react';
+import { isEqual, isNil, noop, omitBy } from 'lodash';
+import { useContext, useRef, useState } from 'react';
 
-import { useTransitionCallback, useUpdateEffect } from 'src/hooks';
+import { useAction, useTransitionCallback, useUpdateEffect } from 'src/hooks';
 
 import { ConfigContext, ValueContext, UpdateContext } from './context';
 import { Adapter, UpdateQuery } from './types';
@@ -15,9 +15,14 @@ export interface QueryFieldProviderProps {
   children: React.ReactNode;
   schema?: ZodTypeAny;
   adapter?: Adapter;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export default function QueryFieldProvider({ children, schema }: QueryFieldProviderProps) {
+export default function QueryFieldProvider({
+  children,
+  schema,
+  onLoadingChange = noop,
+}: QueryFieldProviderProps) {
   const adapter = useContext(ConfigContext);
   const modifyingSearchParamsRef = useRef<URLSearchParams>(null);
   const searchParams = adapter.useSearchParams();
@@ -34,7 +39,8 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
   const update = useTransitionCallback<UpdateQuery>(
     async (key, value, { behavior, childFields }) => {
       const searchParams = getModifyingSearchParams();
-      searchParams.set(key, value as string);
+
+      if (key) searchParams.set(key, value as string);
 
       childFields.forEach((field) => {
         searchParams.delete(field);
@@ -52,13 +58,13 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
     },
   );
 
-  const updateQuery = useCallback<UpdateQuery>(async (...args) => {
+  const updateQuery = useAction(async (...args) => {
     if (!modifyingSearchParamsRef.current)
       modifyingSearchParamsRef.current = getModifyingSearchParams();
 
     await update(...args);
     modifyingSearchParamsRef.current = null;
-  }, []);
+  });
 
   const getModifyingSearchParams = () => {
     if (modifyingSearchParamsRef.current) return modifyingSearchParamsRef.current;
@@ -74,6 +80,11 @@ export default function QueryFieldProvider({ children, schema }: QueryFieldProvi
       return query;
     });
   }, [searchParams]);
+
+  const loading = updateQuery.isLoading();
+  useUpdateEffect(() => {
+    onLoadingChange(loading);
+  }, [loading]);
 
   return (
     <UpdateContext.Provider value={updateQuery}>

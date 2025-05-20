@@ -3,22 +3,22 @@
 import { get, has } from 'lodash';
 import { cloneElement, useContext } from 'react';
 
-import { useAction } from 'src/hooks';
 import { combineCallbacks } from 'src/utils';
+import { useAction } from 'src/hooks';
 
 import { ValueContext, UpdateContext } from './context';
-import { EBehavior, UpdateQueryOptions } from './types';
+import { CustomQueryFieldParams, EBehavior, UpdateQueryOptions } from './types';
 import Provider from './Provider';
 import ConfigProvider from './ConfigProvider';
 
 // ----------
 
 export interface QueryFieldProps extends UpdateQueryOptions {
-  query: string;
+  query?: string;
   shouldForwardError?: boolean;
   shouldForwardLoading?: boolean | { prop: string };
   defaultValue?: unknown;
-  children: React.ReactElement;
+  children: React.ReactElement | ((params: CustomQueryFieldParams) => React.ReactElement);
 }
 
 export default function QueryField({
@@ -30,35 +30,47 @@ export default function QueryField({
   defaultValue,
   childFields = [],
 }: QueryFieldProps) {
-  const childrenProps = children.props as Record<string, unknown>;
-
-  const value = useContext(ValueContext)[key] ?? defaultValue;
+  const value = useContext(ValueContext)[key || ''] ?? defaultValue;
   const update = useContext(UpdateContext);
 
   // --- FUNCTIONS ---
 
   const getValue = getValueExtractor();
 
-  // --- HANDLERS ---
-
-  const handleChange = useAction(async (...args: unknown[]) => {
-    const value = getValue(...args);
+  const updateField = useAction(async (value: unknown) => {
     await update(key, value, { behavior, childFields });
   });
 
+  // --- HANDLERS ---
+
+  const handleChange = async (...args: unknown[]) => {
+    const value = getValue(...args);
+    await updateField(value);
+  };
+
+  if (typeof children === 'function') {
+    return children({
+      value,
+      error: updateField.getError(),
+      loading: updateField.isLoading(),
+      update: updateField,
+    });
+  }
+
+  const childrenProps = children.props as Record<string, unknown>;
   return cloneElement(children, {
     ...childrenProps,
     ...{
       value: get(childrenProps, 'value') ?? value,
       error: shouldForwardError
-        ? get(childrenProps, 'error') || !!handleChange.getError()
+        ? get(childrenProps, 'error') || !!updateField.getError()
         : undefined,
-      onChange: combineCallbacks(handleChange.call, get(childrenProps, 'onChange') as never),
+      onChange: combineCallbacks(handleChange, get(childrenProps, 'onChange') as never),
     },
     ...(shouldForwardLoading
       ? {
           [typeof shouldForwardLoading === 'object' ? shouldForwardLoading.prop : 'loading']:
-            handleChange.isLoading(),
+            updateField.isLoading(),
         }
       : {}),
   });

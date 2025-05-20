@@ -21,7 +21,7 @@ export interface UpdateQueryOptions {
 }
 
 export interface UpdateQuery {
-  (key: string, value: unknown, options: Required<UpdateQueryOptions>): Promise<void>;
+  (key: string | undefined, value: unknown, options: Required<UpdateQueryOptions>): Promise<void>;
 }
 
 // ----- ROUTER BEHAVIORS -----
@@ -32,3 +32,12 @@ export const EBehavior = {
 } as const;
 
 export type EBehavior = (typeof EBehavior)[keyof typeof EBehavior];
+
+// ----- QUERY FIELD -----
+
+export interface CustomQueryFieldParams {
+  value: unknown;
+  error: Error | null;
+  loading: boolean;
+  update: (value?: unknown) => void;
+}
