@@ -36,27 +36,27 @@ export default function QueryFieldProvider({
 
   // --- FUNCTIONS ---
 
-  const update = useTransitionCallback<UpdateQuery>(
-    async (key, value, { behavior, childFields }) => {
-      const searchParams = getModifyingSearchParams();
+  const update = useTransitionCallback<UpdateQuery>(async (entries, { behavior, childFields }) => {
+    const searchParams = new URLSearchParams(window.location.search);
 
-      if (key) searchParams.set(key, value as string);
+    entries.forEach(([key, value]) => {
+      searchParams.set(key, value as string);
+    });
 
-      childFields.forEach((field) => {
-        searchParams.delete(field);
-      });
+    childFields.forEach((field) => {
+      searchParams.delete(field);
+    });
 
-      searchParams.entries().forEach(([key, value]) => {
-        if (value === '' || isNil(value)) {
-          searchParams.delete(key);
-        }
-      });
+    searchParams.entries().forEach(([key, value]) => {
+      if (value === '' || isNil(value)) {
+        searchParams.delete(key);
+      }
+    });
 
-      parseBy(searchParams, schema);
+    parseBy(searchParams, schema);
 
-      router[behavior](`?${searchParams.toString()}`);
-    },
-  );
+    router[behavior](`?${searchParams.toString()}`);
+  });
 
   const updateQuery = useAction(async (...args) => {
     if (!modifyingSearchParamsRef.current)

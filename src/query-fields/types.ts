@@ -21,10 +21,12 @@ export interface UpdateQueryOptions {
 }
 
 export interface UpdateQuery {
-  (key: string | undefined, value: unknown, options: Required<UpdateQueryOptions>): Promise<void>;
+  (entries: [key: string, value: unknown][], options: Required<UpdateQueryOptions>): Promise<void>;
 }
 
 // ----- ROUTER BEHAVIORS -----
+
+export type MultipleQueriesFieldRule = { [valueKey: string]: string } | string[];
 
 export const EBehavior = {
   REPLACE: 'replace',
